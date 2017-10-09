@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        tools:context="cn.shyman.router.SplashActivity">
+	
+	<data>
+		
+		<import type="android.view.View.OnClickListener"/>
+		
+		<variable
+			name="toFirstClickListener"
+			type="OnClickListener"/>
+		
+		<variable
+			name="content"
+			type="String"/>
+	</data>
+	
+	<LinearLayout
+		android:layout_width="match_parent"
+		android:layout_height="match_parent">
+		
+		<TextView
+			android:layout_width="match_parent"
+			android:layout_height="match_parent"
+			android:gravity="center"
+			android:hint="to first"
+			android:onClick="@{toFirstClickListener}"
+			android:text="@{content}"/>
+	
+	</LinearLayout>
+</layout>
