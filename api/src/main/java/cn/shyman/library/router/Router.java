@@ -1,5 +1,6 @@
 package cn.shyman.library.router;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -15,7 +16,7 @@ import java.util.Map;
 
 import cn.shyman.library.router.template.IRouteGroup;
 import cn.shyman.library.router.template.IRouteModule;
-import cn.shyman.library.router.template.IRouteProcessor;
+import cn.shyman.library.router.template.IRouteProvider;
 import cn.shyman.library.router.template.IRouteRoot;
 import cn.shyman.library.router.template.RouteMeta;
 import cn.shyman.library.router.template.RouteType;
@@ -23,20 +24,28 @@ import cn.shyman.library.router.template.RouteType;
 public class Router {
 	private static final String FORMAT_ROUTE_MODULE = "cn.shyman.library.router.impl.%s$$RouteModule";
 	
+	@SuppressLint("StaticFieldLeak")
 	private static volatile Router INSTANCE;
 	
-	public static void init(boolean isDebug, IRouteRoot routeRoot) {
+	public static void init(Context context, IRouteRoot routeRoot, boolean isDebug) {
 		if (INSTANCE != null) {
 			return;
 		}
 		
-		INSTANCE = new Router(isDebug);
+		INSTANCE = new Router(context.getApplicationContext(), isDebug);
 		List<String> routeModuleNameList = new ArrayList<>();
 		routeRoot.loadRoute(routeModuleNameList);
 		
 		for (String routeModuleName : routeModuleNameList) {
 			try {
-				IRouteModule iRouteModule = (IRouteModule) Class.forName(String.format(Locale.CHINA, FORMAT_ROUTE_MODULE, captureName(routeModuleName))).newInstance();
+				Class<?> clazz = Class.forName(String.format(Locale.CHINA, FORMAT_ROUTE_MODULE, captureName(routeModuleName)));
+				if (clazz == null) {
+					if (INSTANCE.isDebug) {
+						throw new RuntimeException("can't find [" + routeModuleName + "] at Router init");
+					}
+					continue;
+				}
+				IRouteModule iRouteModule = (IRouteModule) clazz.newInstance();
 				iRouteModule.loadRoute(INSTANCE.routeGroupMap);
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -46,17 +55,19 @@ public class Router {
 	
 	public static Router getInstance() {
 		if (INSTANCE == null) {
-			throw new RuntimeException("");
+			throw new RuntimeException("must init before to use!");
 		}
 		return INSTANCE;
 	}
 	
+	private Context context;
 	private boolean isDebug = false;
 	private Map<String, Class<? extends IRouteGroup>> routeGroupMap = new HashMap<>();
 	private Map<String, RouteMeta> routeMetaMap = new HashMap<>();
-	private Map<Object, IRouteProcessor> routeProcessorMap = new HashMap<>();
+	private Map<Object, IRouteProvider> routeProviderMap = new HashMap<>();
 	
-	private Router(boolean isDebug) {
+	private Router(Context context, boolean isDebug) {
+		this.context = context;
 		this.isDebug = isDebug;
 	}
 	
@@ -99,7 +110,10 @@ public class Router {
 		
 		RouteMeta routeMeta = postcard.getRouteMeta();
 		if (routeMeta.getRouteType() != RouteType.ACTIVITY) {
-			throw new RuntimeException("routeType must be RouteType.ACTIVITY");
+			if (this.isDebug) {
+				throw new RuntimeException("routeType must be RouteType.ACTIVITY");
+			}
+			return;
 		}
 		
 		int flags = postcard.getFlags();
@@ -124,28 +138,29 @@ public class Router {
 		}
 	}
 	
-	public synchronized <T> T process(Postcard postcard) {
+	public synchronized <T> T provide(Postcard postcard) {
 		completion(postcard);
 		
 		RouteMeta routeMeta = postcard.getRouteMeta();
-		if (routeMeta.getRouteType() != RouteType.PROCESSOR) {
-			throw new RuntimeException("routeType must be RouteType.PROCESSOR");
+		if (routeMeta.getRouteType() != RouteType.PROVIDER) {
+			throw new RuntimeException("routeType must be RouteType.PROVIDER");
 		}
 		
-		IRouteProcessor iRouteProcessor = this.routeProcessorMap.get(routeMeta.getTarget());
-		if (iRouteProcessor == null) {
+		IRouteProvider iRouteProvider = this.routeProviderMap.get(routeMeta.getTarget());
+		if (iRouteProvider == null) {
 			try {
-				iRouteProcessor = (IRouteProcessor) routeMeta.getTarget().newInstance();
-				IRouteProcessor oldIRouteProcessor = this.routeProcessorMap.put(routeMeta.getTarget(), iRouteProcessor);
-				if (oldIRouteProcessor != null) {
-					throw new RuntimeException("multi routerProcessor");
+				iRouteProvider = (IRouteProvider) routeMeta.getTarget().newInstance();
+				IRouteProvider oldIRouteProvider = this.routeProviderMap.put(routeMeta.getTarget(), iRouteProvider);
+				if (oldIRouteProvider != null) {
+					throw new RuntimeException("multi routeProvider");
 				}
+				iRouteProvider.initProvider(this.context);
 			} catch (Exception ignored) {
 				throw new RuntimeException(ignored);
 			}
 		}
 		// noinspection unchecked
-		return (T) iRouteProcessor;
+		return (T) iRouteProvider;
 	}
 	
 	private synchronized void completion(Postcard postcard) {

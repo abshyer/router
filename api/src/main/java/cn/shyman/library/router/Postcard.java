@@ -439,8 +439,8 @@ public class Postcard {
 		Router.getInstance().navigation(this, fragment, requestCode);
 	}
 	
-	public <T> T process() {
-		return Router.getInstance().process(this);
+	public <T> T provide() {
+		return Router.getInstance().provide(this);
 	}
 	
 }

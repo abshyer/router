@@ -99,7 +99,7 @@ public class RouteProcessor extends AbstractProcessor {
 		this.routeModuleMap.clear();
 		
 		TypeMirror androidActivityTypeMirror = elements.getTypeElement(Const.TYPE_ANDROID_ACTIVITY).asType();
-		TypeMirror routeProcessorTypeMirror = this.elements.getTypeElement(Const.TYPE_I_ROUTE_PROCESSOR).asType();
+		TypeMirror routeProviderTypeMirror = this.elements.getTypeElement(Const.TYPE_I_ROUTE_PROVIDER).asType();
 		
 		TypeElement iRouteGroup = this.elements.getTypeElement(Const.TYPE_I_ROUTE_GROUP);
 		
@@ -143,8 +143,8 @@ public class RouteProcessor extends AbstractProcessor {
 			RouteInfo routeInfo = null;
 			if (this.types.isSubtype(routeElementTypeMirror, androidActivityTypeMirror)) {
 				routeInfo = new RouteInfo(Const.ROUTE_TYPE_ACTIVITY, routeElement, route.value());
-			} else if (this.types.isSubtype(routeElementTypeMirror, routeProcessorTypeMirror)) {
-				routeInfo = new RouteInfo(Const.ROUTE_TYPE_PROCESSOR, routeElement, route.value());
+			} else if (this.types.isSubtype(routeElementTypeMirror, routeProviderTypeMirror)) {
+				routeInfo = new RouteInfo(Const.ROUTE_TYPE_PROVIDER, routeElement, route.value());
 			}
 			categories(routeInfo);
 		}

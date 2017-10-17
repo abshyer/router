@@ -13,7 +13,7 @@ class Const {
 	
 	static final String TYPE_I_ROUTE_MODULE = "cn.shyman.library.router.template.IRouteModule";
 	static final String TYPE_I_ROUTE_GROUP = "cn.shyman.library.router.template.IRouteGroup";
-	static final String TYPE_I_ROUTE_PROCESSOR = "cn.shyman.library.router.template.IRouteProcessor";
+	static final String TYPE_I_ROUTE_PROVIDER = "cn.shyman.library.router.template.IRouteProvider";
 	static final String TYPE_ROUTE_META = "cn.shyman.library.router.annotations.RouteMeta";
 	static final String TYPE_ROUTE_TYPE = "cn.shyman.library.router.annotations.RouteType";
 	
@@ -31,6 +31,6 @@ class Const {
 	static final String ROUTE_TYPE = "RouteType";
 	
 	static final String ROUTE_TYPE_ACTIVITY = "ACTIVITY";
-	static final String ROUTE_TYPE_PROCESSOR = "PROCESSOR";
+	static final String ROUTE_TYPE_PROVIDER = "PROVIDER";
 	
 }

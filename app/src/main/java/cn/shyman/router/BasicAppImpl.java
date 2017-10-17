@@ -14,11 +14,11 @@ public class BasicAppImpl extends Application {
 	public void onCreate() {
 		super.onCreate();
 		
-		Router.init(BuildConfig.DEBUG, new IRouteRoot() {
+		Router.init(this, new IRouteRoot() {
 			@Override
 			public void loadRoute(List<String> routeModuleNameList) {
 				routeModuleNameList.add("app");
 			}
-		});
+		}, BuildConfig.DEBUG);
 	}
 }

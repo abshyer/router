@@ -36,9 +36,9 @@ public class SplashActivity extends AppCompatActivity {
 		String content = bundle.getString("content");
 		this.dataBinding.setContent(content);
 		
-		InfoProcessor infoProcessor = Router.getInstance()
-				.build("app/processor/info")
-				.process();
-		Toast.makeText(this, infoProcessor.getInfo(), Toast.LENGTH_SHORT).show();
+		InfoProvider infoProvider = Router.getInstance()
+				.build("app/provider/info")
+				.provide();
+		Toast.makeText(this, infoProvider.getInfo(), Toast.LENGTH_SHORT).show();
 	}
 }
